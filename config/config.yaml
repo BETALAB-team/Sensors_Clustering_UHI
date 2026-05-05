@@ -1,0 +1,168 @@
+project:
+  name: sensor_weather_cooling_project
+  timezone: Europe/Rome
+
+paths:
+  input_dir: "data/input"
+  output_dir: "data/output"
+  figures_dir: "data/figures"
+  intermediate_dir: "data/intermediate"
+
+  reliability_table: "data/input/reliability_table.pkl"
+  sensors_data: "data/input/sensors_data_by_name_preprocessed.pickle"
+  sensors_locations: "data/input/location_with_monthly_stats.geojson"
+
+  cluster_exports_dir: "data/intermediate/cluster_exports"
+  epw_base_file: "data/input/epw/ITA_Venezia-Tessera.161050_IGDG.epw"
+  epw_input_dir: "data/intermediate/cluster_exports"
+  epw_output_dir: "data/output/epw"
+
+  simulation_results_dir: "data/output/simulation_results"
+  cooling_summaries_dir: "data/output/simulation_results/Cooling_summaries"
+
+  results_excel: "data/output/Simulation_Results_hourly.xlsx"
+
+sensor_filtering:
+  sensor_prefix: "T"
+  reliability_index_threshold: 3
+  drop_sensors:
+    - "T91"
+
+clustering:
+  city_name: Padua
+  country: Italy
+  latitude: 45.4064
+  longitude: 11.8768
+  timezone: Europe/Rome
+
+  time_resample: "60min"
+  clustering_period:
+    start: "2024-06-15"
+    end: "2024-09-15"
+
+  cluster_range:
+    min: 2
+    max: 7
+
+  final_clusters: 4
+  random_state: 42
+  method: "kmeans_features"   # options later: kmeans_features, euclidean_ts, softdtw
+  dtw_gamma: 0.01
+
+  daylight_only: true
+  peak_window_hours: 2
+  preserve_magnitude: true
+
+representatives:
+  representative_frequency: "1H"
+  internal_frequency: "10min"
+  export_daily_representatives: true
+  export_full_year_representatives: true
+  export_summer_representatives: true
+
+  summer_months:
+    - 6
+    - 7
+    - 8
+
+epw:
+  excel_pattern: "cluster_*_representative*.xlsx"
+  excel_time_col: "time"
+  excel_db_col: "db_temp"
+  excel_wb_col: "wb_temp"
+  excel_rh_col: "rh"
+  epw_suffix: ".epw"
+  epw_year_override: 2024
+  replace_dry_bulb: true
+  replace_relative_humidity: true
+  recompute_dew_point: true
+
+
+  epw_year_override: 2024
+  replace_dry_bulb: true
+  replace_relative_humidity: true
+  recompute_dew_point: true
+
+simulation_postprocess:
+  total_area_m2: 146318.5715
+
+  summer_start: "2005-05-01 00:00"
+  summer_end: "2005-10-31 23:00"
+
+  summer_start_hour_index: 2880   # 120 * 24
+  summer_end_hour_index: 7296     # 304 * 24
+  building_pattern: "Results Bd*.csv"
+
+  cooling:
+    sensible_col: "TZ sensible load [kW]"
+    latent_col: "TZ latent load [kW]"
+    electricity_col: "ConditioningElectricity [kW]"
+
+  eer_model:
+    type: "linear_clip"
+    formula: "-0.2 * T + 11.2"
+    min_eer: 2.5
+    max_eer: 7.0
+
+plotting:
+  plot_cluster_sensor_timeseries: true
+  representative_pattern: "cluster_{cluster_number}_representatives_*.xlsx"
+  summer_months:
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+  months:
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+
+  month_labels:
+    - May
+    - Jun
+    - Jul
+    - Aug
+    - Sep
+    - Oct
+
+  scenarios:
+    cluster_1: "cluster_1_representatives_hourly_fromexcel_summer_summary.csv"
+    cluster_2: "cluster_2_representatives_hourly_fromexcel_summer_summary.csv"
+    cluster_3: "cluster_3_representatives_hourly_fromexcel_summer_summary.csv"
+    cluster_4: "cluster_4_representatives_hourly_fromexcel_summer_summary.csv"
+    suburban: "ARPAV_suburban_summer_summary.csv"
+    rural: "ARPAV_rural_summer_summary.csv"
+
+excel_epw_mapping:
+  "EnergyPlus TMY Venezia Tessara": "ITA_Venezia-Tessera.161050_IGDG.epw"
+  "Padova TMY 2009 - 2023": "ITA_VN_Padova.AP.160950_TMYx.2009-2023.epw"
+  "ARPAV CITY 2024": "ITA_Venezia-Tessera.161050_IGDG__arpav_city.epw"
+  "ARPAV_RURAL_2024 ": "ITA_Venezia-Tessera.161050_IGDG__arpav_rural.epw"
+  "CLUSTER_00": "ITA_Venezia-Tessera.161050_IGDG___cluster_0_tmy.epw"
+  "CLUSTER_01": "ITA_Venezia-Tessera.161050_IGDG___cluster_1_tmy.epw"
+  "CLUSTER_02": "ITA_Venezia-Tessera.161050_IGDG___cluster_2_tmy.epw"
+  
+simulation:
+  eureca_config: "data/input/simulation/Example_District_Config.json"
+  schedules_file: "data/input/simulation/Schedules_total.xlsx"
+  materials_file: "data/input/simulation/Materials.xlsx"
+  city_model_file: "data/input/simulation/Example_District - Copia.geojson"
+  systems_file: "data/input/simulation/systems.xlsx"
+
+  epw_folder: "data/output/epw"
+  simulation_results_dir: "data/output/simulation_results"
+
+  epw_pattern: "cluster_*_representative*.epw"
+
+  building_model: "1C"
+  shading_calculation: true
+  quasi_steady_state: false
+  output_type: "csv"
+  overwrite: false
+  
+  
